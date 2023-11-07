@@ -1,9 +1,13 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
-from routers import jwt_auth_users
+from routers import user
+
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
 
 app = FastAPI()
 
-app.include_router(jwt_auth_users.router)
+app.include_router(user.router)
 
 
 @app.get("/")
