@@ -1,7 +1,6 @@
 from fastapi import Depends, HTTPException, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
-from database.db import users_db
 from utils.jwt_auth_users import search_user_db, crypt, current_user
 from jose import jwt
 from models.user import User
