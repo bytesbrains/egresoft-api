@@ -2,7 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 
 db_name = os.getenv("DB_NAME")
 db_user = os.getenv("DB_USER")
