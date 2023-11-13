@@ -39,6 +39,12 @@ def search_user(username: str):
 
 # Autenticacion de usuario encriptado
 async def auth_user(token: str = Depends(oauth2)):
+
+    exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Credenciales de autenticación inválidas",
+        headers={"WWW-Authenticate": "Bearer"})
+
     try:
         username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
         if username is None:
