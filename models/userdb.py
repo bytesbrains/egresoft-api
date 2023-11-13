@@ -4,7 +4,7 @@ from bson import ObjectId
 from passlib.hash import bcrypt
 
 class User(BaseModel):
-    id: Optional[str] = Field(default_factory=lambda: str(ObjectId()), alias="_id")
+    id: Optional[str] = None
     username: str
     full_name: str
     email: str
