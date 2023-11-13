@@ -1,3 +1,8 @@
 from pymongo import MongoClient
+import os
 
-db_client = MongoClient("mongodb+srv://test:test@cluster0.zlachsq.mongodb.net/?retryWrites=true&w=majority").test
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db_client = MongoClient(os.getenv("MONGOCONNECT")).test
