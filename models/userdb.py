@@ -1,7 +1,12 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
-from bson import ObjectId
 from passlib.hash import bcrypt
+from enum import Enum
+
+
+class UserRole(str, Enum):
+    graduate = "graduate"
+    admin = "admin"
 
 
 class User(BaseModel):
@@ -11,6 +16,7 @@ class User(BaseModel):
     email: str
     disabled: bool
     password: str
+    role: Optional[UserRole] = None
 
 
 class UserDB(User):
