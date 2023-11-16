@@ -26,6 +26,13 @@ async def user(id: str):
 
 @router.post("/add/graduate", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(user: User):
+    existing_user = search_user("id", user.id)
+    if existing_user is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ya existe un usuario con ese ID",
+        )
+
     existing_user = search_user("email", user.email)
     if existing_user is not None:
         raise HTTPException(
@@ -38,7 +45,6 @@ async def create_user(user: User):
     user_dict[
         "hashed_password"
     ] = hashed_password  # Almacena la versión cifrada de la contraseña
-    del user_dict["id"]
     del user_dict["password"]  # Elimina la contraseña sin cifrar antes de la inserción
     user_dict["password"] = hashed_password
     # Elimina la contraseña que se uso para cifrar y solo se muestra el campo password y no hash_password
@@ -54,9 +60,9 @@ async def create_user(user: User):
         user.role if user.role else UserRole.graduate
     )  # Establece un valor predeterminado si no se proporciona
 
-    id = db_client.graduates.insert_one(user_dict).inserted_id
+    user_id = db_client.graduates.insert_one(user_dict).inserted_id
 
-    new_user = user_schema(db_client.graduates.find_one({"_id": id}))
+    new_user = user_schema(db_client.graduates.find_one({"_id": user_id}))
 
     return User(**new_user)
 

@@ -28,9 +28,9 @@ exception = HTTPException(
 )
 
 
-def search_user_db_graduate(username: str):
+def search_user_db_graduate(user_id: str):
     try:
-        user = db_client.graduates.find_one({"username": username})
+        user = db_client.graduates.find_one({"id": user_id})
         if user:
             return UserDB(**user_schema(user))
         else:
@@ -40,9 +40,9 @@ def search_user_db_graduate(username: str):
         return None
 
 
-def search_user_graduate(username: str):
+def search_user_graduate(user_id: str):
     try:
-        user = db_client.graduates.find_one({"username": username})
+        user = db_client.graduates.find_one({"id": user_id})
         if user:
             return User(**user_schema(user))
         else:
@@ -62,15 +62,15 @@ async def auth_user_graduate(token: str = Depends(oauth2)):
 
     try:
         # Decodifica el token para obtener el nombre de usuario
-        username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
-        if username is None:
+        user_id = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
+        if user_id is None:
             raise exception
 
     except JWTError:
         raise exception
 
     # Utiliza la función search_user_graduate para buscar el usuario en la base de datos
-    user = search_user_graduate(username)
+    user = search_user_graduate(user_id)
 
     if user is None:
         raise exception
@@ -81,7 +81,7 @@ async def auth_user_graduate(token: str = Depends(oauth2)):
 # si el usuario está inactivo (disabled), enviar mensaje
 async def current_user_graduate(user: User = Depends(auth_user_graduate)):
     # Utiliza la función search_user_graduate para obtener el usuario actualizado de la base de datos
-    user = search_user_graduate(user.username)
+    user = search_user_graduate(user.id)
 
     if user is None:
         raise HTTPException(
@@ -97,9 +97,9 @@ async def current_user_graduate(user: User = Depends(auth_user_graduate)):
 
 
 ### Apartir de aqui todo el login de los admins
-def search_user_db_admin(username: str):
+def search_user_db_admin(user_id: str):
     try:
-        user = db_client.admins.find_one({"username": username})
+        user = db_client.admins.find_one({"id": user_id})
         if user:
             return UserDB(**user_schema(user))
         else:
@@ -109,9 +109,9 @@ def search_user_db_admin(username: str):
         return None
 
 
-def search_user_admin(username: str):
+def search_user_admin(user_id: str):
     try:
-        user = db_client.admins.find_one({"username": username})
+        user = db_client.admins.find_one({"id": user_id})
         if user:
             return User(**user_schema(user))
         else:
@@ -131,15 +131,15 @@ async def auth_user_admin(token: str = Depends(oauth2)):
 
     try:
         # Decodifica el token para obtener el nombre de usuario
-        username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
-        if username is None:
+        user_id = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
+        if user_id is None:
             raise exception
 
     except JWTError:
         raise exception
 
     # Utiliza la función search_user_admin para buscar el usuario en la base de datos
-    user = search_user_admin(username)
+    user = search_user_admin(user_id)
 
     if user is None:
         raise exception
@@ -150,7 +150,7 @@ async def auth_user_admin(token: str = Depends(oauth2)):
 # si el usuario está inactivo (disabled), enviar mensaje
 async def current_user_admin(user: User = Depends(auth_user_admin)):
     # Utiliza la función search_user_admin para obtener el usuario actualizado de la base de datos
-    user = search_user_admin(user.username)
+    user = search_user_admin(user.id)
 
     if user is None:
         raise HTTPException(

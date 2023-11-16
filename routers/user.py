@@ -27,12 +27,13 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     try:
         user = search_user_db_graduate(form.username)
 
-        if not user:
+        if user is None:
             raise HTTPException(
                 status_code=400, detail="Error: el usuario no es correcto"
             )
 
-        if not crypt.verify(form.password, user.password):
+        # Verifica la contraseña utilizando el método verify de CryptContext
+        if not crypt.verify_and_update(form.password, user.password)[0]:
             raise HTTPException(
                 status_code=400, detail="Error: la contraseña no es correcta"
             )
@@ -44,7 +45,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 
         # Configuración del token de acceso
         access_token = {
-            "sub": user.username,
+            "sub": user.id,
             "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION),
         }
 
@@ -54,10 +55,13 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
             "token_type": "bearer",
         }
 
+    except HTTPException as e:
+        return e
     except Exception as e:
         print(f"Error en la autenticación: {e}")
         raise HTTPException(
-            status_code=500, detail="Error interno del servidor en la autenticación"
+            status_code=500,
+            detail=f"Error interno del servidor en la autenticación: {str(e)}",
         )
 
 
