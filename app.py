@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from routers import user,egresado
-from routers import user,usersdb
+from routers import user,egresado,usersdb
 
 load_dotenv()
 
@@ -9,7 +8,6 @@ app = FastAPI()
 
 app.include_router(user.router)
 app.include_router(egresado.router)
-app.include_router(user.router)
 app.include_router(usersdb.router)
 
 @app.get("/")
