@@ -3,7 +3,7 @@ name: Publish Docker Image
 on:
   push:
     branches:
-      - main  # Puedes ajustar la rama que desees
+      - main
 
 jobs:
   build-and-push:
@@ -11,12 +11,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/image_name:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/image_name:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/egresoft-api:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/egresoft-api:latest
