@@ -96,7 +96,7 @@ async def login_admin(form: OAuth2PasswordRequestForm = Depends()):
 
         # Configuración del token de acceso
         access_token = {
-            "sub": user.username,
+            "sub": user.id,
             "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION),
         }
 
