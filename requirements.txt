@@ -23,5 +23,5 @@ six
 sniffio
 SQLAlchemy
 starlette
-typing_extension
+typing_extensions
 uvicorn
