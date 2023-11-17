@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from passlib.hash import bcrypt
 from enum import Enum
 
 
@@ -14,11 +15,20 @@ class User(BaseModel):
     full_name: str
     email: str
     disabled: bool
+    password: str
     role: Optional[UserRole] = None
 
 
 class UserDB(User):
-    password: str
+    hashed_password: str
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hash(password)
+
+
+# def verify_password(plain_password: str, hashed_password: str) -> bool:
+#   return bcrypt.verify(plain_password, hashed_password)
 
 
 class Config:
