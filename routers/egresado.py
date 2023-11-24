@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from models.models import EgresadoUpdate,Base
 from database.database import engine,get_db
 from sqlalchemy.orm import Session
-from utils.egresado_functions import get_egresado
+from utils.helper_functions import get_egresado
 
 Base.metadata.create_all(bind=engine)
 
