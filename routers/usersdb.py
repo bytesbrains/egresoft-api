@@ -7,7 +7,6 @@ from models.userdb import User, hash_password, UserRole
 from schemas.user import user_schema, users_schema
 from database.client import db_client
 from utils.usersdb import search_user, search_user_admin
-from bson import ObjectId
 
 
 router = APIRouter(
@@ -30,42 +29,61 @@ async def user(id: str):
 
 @router.post("/add/user", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(user: User, egresado_data: EgresadoUpdate, db: Session = Depends(get_db)):
-    existing_user_id = search_user("id", user.id)
-    if existing_user_id is not None:
+    existing_user = search_user("id", user.id)
+    if existing_user is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A user with this ID already exists",
+            detail="Ya existe un usuario con ese ID",
         )
 
-    existing_user_email = search_user("email", user.email)
-    if existing_user_email is not None:
+    existing_user = search_user("email", user.email)
+    if existing_user is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email is already in use by another account",
+            detail="El correo electrónico ya está en uso en otra cuenta",
         )
 
-    hashed_password = hash_password(user.password)
-
-    # Create a user for MongoDB
+    hashed_password = hash_password(user.password)  # Utiliza la función hash_password
     user_dict = dict(user)
-    user_dict["hashed_password"] = hashed_password
-    del user_dict["password"]
+    user_dict[
+        "hashed_password"
+    ] = hashed_password  # Almacena la versión cifrada de la contraseña
+    del user_dict["password"]  # Elimina la contraseña sin cifrar antes de la inserción
+    user_dict["password"] = hashed_password
+    # Elimina la contraseña que se uso para cifrar y solo se muestra el campo password y no hash_password
+    del user_dict["hashed_password"]
+
+    if user.role != UserRole.graduate:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se permite el rol a 'graduate'",
+        )
+
+    # Verifica que el valor de role sea válido antes de asignarlo al diccionario
+    if user.role and not UserRole.__members__.get(user.role):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El valor de 'role' no es válido",
+        )
+    user_dict["role"] = (
+        user.role if user.role else UserRole.graduate
+    )  # Establece un valor predeterminado si no se proporciona
 
     user_id_mongo = db_client.graduates.insert_one(user_dict).inserted_id
     new_user_mongo = user_schema(db_client.graduates.find_one({"_id": user_id_mongo}))
 
-    # Create a new user for PostgreSQL
+    # Crear un nuevo usuario para PostgreSQL
     user_postgres = UserDB(
         id_user=user.id,
         tipo=user.role,
         correo=user.email,
     )
 
-    # Insert the new user into PostgreSQL
+    # Insertar el nuevo usuario en PostgreSQL
     db.add(user_postgres)
     db.commit()
 
-    # Insert data into EgresadoBasico
+    # Insertar los datos en EgresadoBasico
     egresado_data_dict = egresado_data.dict()
     egresado_data_dict["id_egre"] = user.id  # Assuming user.id is the id_egre value
 

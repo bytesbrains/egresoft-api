@@ -1,13 +1,13 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from routers import user,egresado,usersdb,administrador
+from routers import user,egresado,usersdb,administrativo
 
 load_dotenv()
 
 app = FastAPI()
 
 app.include_router(user.router)
-app.include_router(administrador.router)
+app.include_router(administrativo.router)
 app.include_router(egresado.router)
 app.include_router(usersdb.router)
 

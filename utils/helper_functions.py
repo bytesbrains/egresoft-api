@@ -9,8 +9,8 @@ async def get_egresado(db: Session, id_egre: str):
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Egresado no encontrado")
     
-async def get_administrador(db: Session, id_adm: str):
+async def get_administrativo(db: Session, id_adm: str):
     try:
         return db.query(AdministrativoBasico).filter(AdministrativoBasico.id_adm == id_adm).one()
     except NoResultFound:
-        raise HTTPException(status_code=404, detail="Administrador no encontrado")
+        raise HTTPException(status_code=404, detail="Administrativo no encontrado")
