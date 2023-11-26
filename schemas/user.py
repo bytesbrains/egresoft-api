@@ -1,8 +1,9 @@
+from models.models import CarreraDB
+
+
 def user_schema(user) -> dict:
     return {
         "id": user["id"],
-        "username": user["username"],
-        "full_name": user.get("full_name", ""),
         "email": user["email"],
         "disabled": user["disabled"],
         "password": user.get("password", ""),
@@ -12,3 +13,18 @@ def user_schema(user) -> dict:
 
 def users_schema(users) -> list:
     return [user_schema(user) for user in users]
+
+
+def carrera_schema(carrera: CarreraDB) -> dict:
+    return {
+        "id_carrera": carrera.id_carrera,
+        "modalidad": carrera.modalidad,
+        "nombre": carrera.nombre,
+        "jefe_dpt": carrera.jefe_dpt,
+        "cordinador": carrera.cordinador,
+        "evaluador": carrera.evaluador,
+    }
+
+
+def carreras_schema(carreras: list[CarreraDB]) -> list[dict]:
+    return [carrera_schema(carrera) for carrera in carreras]
