@@ -7,7 +7,7 @@ load_dotenv()
 
 db_name = os.getenv("DB_NAME")
 db_user = os.getenv("DB_USER")
-db_pswd = int(os.getenv("DB_PSWD"))
+db_pswd = os.getenv("DB_PSWD")
 db_host = os.getenv("DB_HOST")
 db_port = int(os.getenv("DB_PORT"))
 
