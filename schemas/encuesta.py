@@ -1,6 +1,9 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
+# The above code defines a set of classes for creating surveys, including items, elements, pages, and
+# the survey itself.
+
 
 class Item(BaseModel):
     name: str
@@ -20,6 +23,7 @@ class Element(BaseModel):
     choices: Optional[List[str]] = None
     showOtherItem: Optional[bool] = None
     showNoneItem: Optional[bool] = None
+    noneText: Optional[str] = None
     items: Optional[List[Item]] = None
 
 
