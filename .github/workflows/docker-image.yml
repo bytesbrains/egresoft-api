@@ -41,16 +41,16 @@ jobs:
           DB_PSWD: ${{ secrets.DB_PSWD }}
           run: |
             uvicorn app:app --host 0.0.0.0 --port 8000 &
-            sleep 5  
+            sleep 5 &
             response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/)
             if [ "$response" -eq 200 ]; then
               echo "FastAPI server is running successfully!"
-              exit 0  # Finalizar la ejecución con éxito
+              pkill uvicorn
+              exit 0
             else
               echo "FastAPI server did not start correctly."
-              exit 1  # Finalizar la ejecución con un error
+              exit 1
             fi
-          
           
   build-and-push:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
