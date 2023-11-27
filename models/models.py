@@ -133,3 +133,20 @@ class CarrerAdd(BaseModel):
     jefe_dpt: Optional[str] = None
     cordinador: Optional[str] = None
     evaluador: Optional[str] = None
+
+
+class EspecialidadDB(Base):
+    __tablename__ = "especialidad"
+
+    id_especialidad = Column(String, nullable=False)
+    nombre = Column(String)
+
+    # Definir la clave primaria compuesta
+    __table_args__ = (PrimaryKeyConstraint("id_especialidad"),)
+
+
+class Especialidad(BaseModel):
+    id_especialidad: Optional[str] = Field(
+        default="ISIE-CEN-2022-02", description="ID de la especialidad"
+    )
+    nombre: Optional[str] = None

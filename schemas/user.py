@@ -1,4 +1,4 @@
-from models.models import CarreraDB
+from models.models import CarreraDB, EspecialidadDB
 
 
 def user_schema(user) -> dict:
@@ -28,3 +28,14 @@ def carrera_schema(carrera: CarreraDB) -> dict:
 
 def carreras_schema(carreras: list[CarreraDB]) -> list[dict]:
     return [carrera_schema(carrera) for carrera in carreras]
+
+
+def especialidad_schema(especialidad: EspecialidadDB) -> dict:
+    return {
+        "id_especialidad": especialidad.id_especialidad,
+        "nombre": especialidad.nombre,
+    }
+
+
+def especialidades_schema(especialidades: list[EspecialidadDB]) -> list[dict]:
+    return [especialidad_schema(especialidad) for especialidad in especialidades]
