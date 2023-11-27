@@ -1,9 +1,19 @@
 from pydantic import BaseModel, Field
 from datetime import date, datetime
-from sqlalchemy import JSON, Column, Integer, String, Date, PrimaryKeyConstraint
+from sqlalchemy import (
+    JSON,
+    Column,
+    Integer,
+    String,
+    Date,
+    PrimaryKeyConstraint,
+    ForeignKeyConstraint,
+    CheckConstraint,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Dict, Optional
 from enum import Enum
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -150,3 +160,49 @@ class Especialidad(BaseModel):
         default="ISIE-CEN-2022-02", description="ID de la especialidad"
     )
     nombre: Optional[str] = None
+
+
+class PlanEstudioDB(Base):
+    __tablename__ = "plan_estudio"
+
+    id_carrera = Column(String, nullable=True)  # Campo opcional
+    modalidad = Column(String, nullable=True)  # Campo opcional
+    id_especialidad = Column(String, nullable=False)
+    periodo = Column(String, nullable=False)
+
+    # Clave primaria compuesta
+    __table_args__ = (
+        PrimaryKeyConstraint("id_carrera", "modalidad", "id_especialidad"),
+        ForeignKeyConstraint(
+            ["id_carrera", "modalidad"],
+            ["carrera.id_carrera", "carrera.modalidad"],
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
+        ForeignKeyConstraint(
+            ["id_especialidad"],
+            ["especialidad.id_especialidad"],
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
+        CheckConstraint("id_carrera ~ '^[A-Z]{4}[-]20[0-9]{2}[-]2[0-9]{2}$'"),
+        CheckConstraint("modalidad in ('presencial', 'distancia')"),
+        CheckConstraint("periodo ~ '^[a-zA-Z]+[ -]+[a-zA-Z]+[ -]+[0-9]{4}$'"),
+    )
+
+    # Relaciones si es necesario (dependiendo de tu lógica de negocio)
+    carrera = relationship("CarreraDB")
+    especialidad = relationship("EspecialidadDB")
+
+
+class PlanEstudio(BaseModel):
+    id_carrera: Optional[str] = Field(default=None, description="ID de la carrera")
+    modalidad: Optional[str] = Field(default=None, description="Modalidad")
+    id_especialidad: str = Field(default=None, description="ID de la especialidad")
+    periodo: Optional[str] = Field(
+        default=f"Agosto-Diciembre {datetime.today().year}",
+        description="Periodo",
+    )
+
+    class Config:
+        from_attributes = True
