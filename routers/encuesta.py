@@ -17,7 +17,7 @@ async def create_survey(survey: Survey):
             detail="Ya existe una encuesta con ese titulo.",
         )
 
-    survey = db_client.surveys.insert_one(survey.dict()).inserted_id
+    survey_id = db_client.surveys.insert_one(survey.dict()).inserted_id
     return survey 
 
 @router.get("/get/{survey_title}", response_model=Survey)
