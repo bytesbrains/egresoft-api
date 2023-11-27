@@ -2,7 +2,13 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from database.database import get_db
-from models.models import AdministrativoBasico, AdministrativoUpdate, EgresadoBasico, EgresadoUpdate, UserDB
+from models.models import (
+    AdministrativoBasico,
+    AdministrativoUpdate,
+    EgresadoBasico,
+    EgresadoUpdate,
+    UserDB,
+)
 from models.userdb import User, hash_password, UserRole
 from schemas.user import user_schema, users_schema
 from database.client import db_client
@@ -10,8 +16,8 @@ from utils.usersdb import search_user, search_user_admin
 
 
 router = APIRouter(
-    prefix="/userdb",
-    tags=["userdb"],
+    prefix="/usersdb",
+    tags=["usersdb"],
     responses={status.HTTP_404_NOT_FOUND: {"message": "No encontrado"}},
 )
 
@@ -27,8 +33,10 @@ async def user(id: str):
     return search_user("id", id)
 
 
-@router.post("/add/user", response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_user(user: User, egresado_data: EgresadoUpdate, db: Session = Depends(get_db)):
+@router.post("/add/users", response_model=User, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user: User, egresado_data: EgresadoUpdate, db: Session = Depends(get_db)
+):
     existing_user = search_user("id", user.id)
     if existing_user is not None:
         raise HTTPException(
@@ -169,6 +177,7 @@ async def del_user(id: str, db: Session = Depends(get_db)):
             detail="Ha ocurrido un error al eliminar el usuario",
         )
 
+
 ### Apartir de aqui todo es admin ###
 @router.get("/get/admins", response_model=list[User])
 async def users_admin():
@@ -181,7 +190,9 @@ async def user_admin(id: str):
 
 
 @router.post("/add/admin", response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_user_admin(user: User, admin_data: AdministrativoUpdate, db: Session = Depends(get_db)):
+async def create_user_admin(
+    user: User, admin_data: AdministrativoUpdate, db: Session = Depends(get_db)
+):
     existing_user = search_user_admin("id", user.id)
     if existing_user is not None:
         raise HTTPException(
@@ -306,7 +317,7 @@ async def del_user_admin(id: str, db: Session = Depends(get_db)):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="No se ha eliminado el usuario",
             )
-        
+
         # Eliminar el usuario correspondiente en PostgreSQL
         user_to_delete = db.query(UserDB).filter(UserDB.id_user == id).first()
         if user_to_delete:

@@ -8,6 +8,14 @@ router = APIRouter(
     responses={status.HTTP_404_NOT_FOUND: {"message": "No encontrado"}},
 )
 
+@router.get("/", response_model=list[Survey], status_code=status.HTTP_200_OK)
+async def get_surveys():
+    surveys = db_client.surveys.find_one()
+    if not surveys:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se han encontrado encuestas")
+    return db_client.surveys.find()
+
+
 @router.post("/add", response_model=Survey, status_code=status.HTTP_201_CREATED)
 async def create_survey(survey: Survey):
     existing_survey = db_client.surveys.find_one({"title": survey.title})

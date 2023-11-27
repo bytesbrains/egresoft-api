@@ -7,12 +7,11 @@ from enum import Enum
 class UserRole(str, Enum):
     graduate = "graduate"
     admin = "admin"
+    employer = "employer"
 
 
 class User(BaseModel):
     id: str
-    username: str
-    full_name: str
     email: str
     disabled: bool
     password: str
