@@ -1,3 +1,4 @@
+from token import OP
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -20,6 +21,7 @@ class Element(BaseModel):
     choices: Optional[List[str]] = None
     showOtherItem: Optional[bool] = None
     showNoneItem: Optional[bool] = None
+    noneText: Optional[str] = None
     items: Optional[List[Item]] = None
 
 
