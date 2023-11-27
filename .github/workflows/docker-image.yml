@@ -28,9 +28,20 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run FastAPI app
+        env:
+          ALGORITHM: ${{ secrets.ALGORITHM }}
+          ACCESS_TOKEN_DURATION: ${{ secrets.ACCESS_TOKEN_DURATION }}
+          SECRET: ${{ secrets.SECRET }}
+          MONGOCONNECT: ${{ secrets.MONGOCONNECT }}
+          MONGODBA: ${{ secrets.MONGODBA }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PSWD: ${{ secrets.DB_PSWD }}
         run: |
-          uvicorn app:app --host 0.0.0.0 --port 8000
-
+          uvicorn app:app 
+          
   build-and-push:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
