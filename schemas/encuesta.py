@@ -1,4 +1,3 @@
-from token import OP
 from typing import List, Optional
 from pydantic import BaseModel
 
