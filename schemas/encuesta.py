@@ -1,6 +1,9 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
+# The above code defines a set of classes for creating surveys, including items, elements, pages, and
+# the survey itself.
+
 
 class Item(BaseModel):
     name: str
