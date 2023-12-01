@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime, timedelta
 from utils.jwt_auth_users import (
     search_user_db_graduate,
@@ -10,7 +11,16 @@ from utils.jwt_auth_users import (
 )
 from jose import jwt
 from models.user import User
+from models.models import EgresadoBasico, Base
+from schemas.user import postgres_user_schema
+from database.database import engine, get_db
+from sqlalchemy.orm import Session
+
+Base.metadata.create_all(bind=engine)
+
+
 import os
+
 
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_DURATION = int(os.getenv("ACCESS_TOKEN_DURATION"))
@@ -23,7 +33,9 @@ router = APIRouter(
 
 ### Apartir de aqui todo el login del Admin ###
 @router.post("/login/graduate")
-async def login(form: OAuth2PasswordRequestForm = Depends()):
+async def login(
+    form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
     try:
         user = search_user_db_graduate(form.username)
 
@@ -69,8 +81,25 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/me/graduate")  # verificar token de user usando current_user
-async def me(user: User = Depends(current_user_graduate)):
-    return user
+async def me(
+    user: User = Depends(current_user_graduate), db: Session = Depends(get_db)
+):
+    try:
+        postgres_user = (
+            db.query(EgresadoBasico).filter(EgresadoBasico.id_egre == user.id).one()
+        )
+        user_postgres = postgres_user_schema(postgres_user)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Egresado no encontrado")
+
+    # Fusionar los datos de usuario de ambas fuentes en un nuevo diccionario
+    merged_user = {}
+    if user:
+        merged_user.update(user)
+    if user_postgres:
+        merged_user.update(user_postgres)
+
+    return merged_user
 
 
 ### Apartir de aqui todo el login del Admin ###
