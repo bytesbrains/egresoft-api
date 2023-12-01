@@ -36,7 +36,7 @@ def search_userPM(field: str, key):
         return None
 
 
-async def search_fusion_user(id: str, db: Session = Depends(get_db)):
+def search_fusion_user(id: str, db: Session = Depends(get_db)):
     try:
         user_mongo = search_userPM("id", id)
     except Exception as e:
