@@ -1,19 +1,21 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from database.database import get_db
+from database.database import get_db, engine
 from models.models import (
     AdministrativoBasico,
     AdministrativoUpdate,
     EgresadoBasico,
     EgresadoUpdate,
     UserDB,
+    Base,
 )
 from models.userdb import User, hash_password, UserRole
 from schemas.user import user_schema, users_schema
 from database.client import db_client
-from utils.usersdb import search_user, search_user_admin
+from utils.usersdb import search_user, search_user_admin, search_fusion_user
 
+Base.metadata.create_all(bind=engine)
 
 router = APIRouter(
     prefix="/usersdb",
@@ -28,9 +30,9 @@ async def users():
     return users_schema(db_client.graduates.find())
 
 
-@router.get("/get/graduate/{id}")  # Path
-async def user(id: str):
-    return search_user("id", id)
+@router.get("/get/graduate/{id}")
+async def user(id: str, db: Session = Depends(get_db)):
+    return await search_fusion_user(id, db)
 
 
 @router.post("/add/users", response_model=User, status_code=status.HTTP_201_CREATED)

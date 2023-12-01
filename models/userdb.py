@@ -18,6 +18,13 @@ class User(BaseModel):
     role: Optional[UserRole] = None
 
 
+class UserPM(BaseModel):
+    id: str
+    email: str
+    disabled: bool
+    role: Optional[UserRole] = None
+
+
 class UserDB(User):
     hashed_password: str
 

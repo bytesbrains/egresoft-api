@@ -19,6 +19,17 @@ async def get_all_planes_estudio(db: Session = Depends(get_db)):
     return planes_estudio_schema(db.query(PlanEstudioDB).all())
 
 
+@router.get("/get/study_plan/{plan_id}", response_model=PlanEstudio)
+async def get_plan_estudio(plan_id: str, db: Session = Depends(get_db)):
+    plan_estudio = (
+        db.query(PlanEstudioDB).filter(PlanEstudioDB.id_especialidad == plan_id).first()
+    )
+    if not plan_estudio:
+        raise HTTPException(status_code=404, detail="Plan de estudio no encontrado")
+
+    return plan_estudio_schema(plan_estudio)
+
+
 @router.post("/add/study_plan", response_model=PlanEstudio)
 async def add_plan_estudio(plan_estudio: PlanEstudio, db: Session = Depends(get_db)):
     try:
