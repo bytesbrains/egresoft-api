@@ -18,6 +18,15 @@ class User(BaseModel):
     role: Optional[UserRole] = None
 
 
+# PM == postgrest & Mongo
+class UserPM(BaseModel):
+    id: str
+    email: str
+    disabled: bool
+    password: str
+    role: Optional[UserRole] = None
+
+
 class UserDB(User):
     hashed_password: str
 

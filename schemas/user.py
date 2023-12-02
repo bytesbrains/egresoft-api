@@ -1,4 +1,4 @@
-from models.models import CarreraDB, EspecialidadDB, PlanEstudioDB
+from models.models import CarreraDB, EspecialidadDB, PlanEstudioDB, EgresadoBasico
 
 
 def user_schema(user) -> dict:
@@ -11,8 +11,36 @@ def user_schema(user) -> dict:
     }
 
 
+def user_schemaPM(user) -> dict:
+    return {
+        "id": user["id"],
+        "email": user["email"],
+        "disabled": user["disabled"],
+        "password": user.get("password", ""),
+        "role": user.get("role", None),
+    }
+
+
 def users_schema(users) -> list:
     return [user_schema(user) for user in users]
+
+
+# Schema para datos de usuario en PostgreSQL
+def postgres_user_schema(user: EgresadoBasico) -> dict:
+    return {
+        "id_carrera": user.id_carrera,
+        "modalidad": user.modalidad,
+        "id_especialidad": user.id_especialidad,
+        "periodo_egreso": user.periodo_egreso,
+        "nombre": user.nombre,
+        "edad": user.edad,
+        "curp": user.curp,
+        "sexo": user.sexo,
+        "telefono": user.telefono,
+        "correo": user.correo,
+        "direccion": user.direccion,
+        # Aquí puedes agregar más campos si es necesario # "id": user.id_egre,
+    }
 
 
 def carrera_schema(carrera: CarreraDB) -> dict:
