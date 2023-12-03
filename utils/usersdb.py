@@ -1,9 +1,14 @@
 from fastapi import Depends, HTTPException
 from models.userdb import User, UserPM
-from schemas.user import user_schema, postgres_user_schema, user_schemaPM
+from schemas.user import (
+    user_schema,
+    postgres_administrativo_schema,
+    postgres_user_schema,
+    user_schemaPM,
+)
 from sqlalchemy.orm.exc import NoResultFound
 from database.client import db_client
-from models.models import EgresadoBasico, Base
+from models.models import EgresadoBasico, AdministrativoBasico, Base
 from database.database import engine, get_db
 from sqlalchemy.orm import Session
 
@@ -40,7 +45,7 @@ def search_fusion_user(id: str, db: Session = Depends(get_db)):
     try:
         user_mongo = search_userPM("id", id)
     except Exception as e:
-        print(f"Error al buscar usuario en MongoDB: {e}")
+        print(f"Error al buscar Egresado en MongoDB: {e}")
         user_mongo = None
 
     try:
@@ -61,7 +66,7 @@ def search_fusion_user(id: str, db: Session = Depends(get_db)):
     return merged_user
 
 
-async def search_user_admin(field: str, key):
+def search_user_admin(field: str, key):
     try:
         user = db_client.admins.find_one({field: key})
         if user:
@@ -69,5 +74,44 @@ async def search_user_admin(field: str, key):
         else:
             return None  # Si no se encuentra el usuario, devolver None
     except Exception as e:
-        print(f"Error al buscar usuario: {e}")
+        print(f"Error al buscar Administrativo: {e}")
         return None
+
+
+def search_user_admin_PM(field: str, key):
+    try:
+        user = db_client.admins.find_one({field: key})
+        if user:
+            return UserPM(**user_schemaPM(user))
+        else:
+            return None  # Si no se encuentra el usuario, devolver None
+    except Exception as e:
+        print(f"Error al buscar Administrativo: {e}")
+        return None
+
+
+def search_fusion_user_admin(id: str, db: Session = Depends(get_db)):
+    try:
+        user_mongo = search_user_admin_PM("id", id)
+    except Exception as e:
+        print(f"Error al buscar Administrativo en MongoDB: {e}")
+        user_mongo = None
+
+    try:
+        postgres_user = (
+            db.query(AdministrativoBasico)
+            .filter(AdministrativoBasico.id_adm == id)
+            .one()
+        )
+        user_postgres = postgres_administrativo_schema(postgres_user)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Administrativo no encontrado")
+
+    # Fusionar los datos de usuario de ambas fuentes en un nuevo diccionario
+    merged_user = {}
+    if user_mongo:
+        merged_user.update(user_mongo)
+    if user_postgres:
+        merged_user.update(user_postgres)
+
+    return merged_user
