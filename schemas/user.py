@@ -1,4 +1,10 @@
-from models.models import CarreraDB, EspecialidadDB, PlanEstudioDB, EgresadoBasico
+from models.models import (
+    CarreraDB,
+    AdministrativoBasico,
+    EspecialidadDB,
+    PlanEstudioDB,
+    EgresadoBasico,
+)
 
 
 def user_schema(user) -> dict:
@@ -40,6 +46,18 @@ def postgres_user_schema(user: EgresadoBasico) -> dict:
         "correo": user.correo,
         "direccion": user.direccion,
         # Aquí puedes agregar más campos si es necesario # "id": user.id_egre,
+    }
+
+
+def postgres_administrativo_schema(admin: AdministrativoBasico) -> dict:
+    return {
+        "nombre": admin.nombre,
+        "cargo": admin.cargo,
+        "fecha_nacimiento": admin.fecha_nacimiento,
+        "genero": admin.genero,
+        "direccion": admin.direccion,
+        "correo": admin.correo,
+        "telefono": admin.telefono,
     }
 
 

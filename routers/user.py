@@ -11,8 +11,8 @@ from utils.jwt_auth_users import (
 )
 from jose import jwt
 from models.user import User
-from models.models import EgresadoBasico, Base
-from schemas.user import postgres_user_schema
+from models.models import EgresadoBasico, AdministrativoBasico, Base
+from schemas.user import postgres_user_schema, postgres_administrativo_schema
 from database.database import engine, get_db
 from sqlalchemy.orm import Session
 
@@ -146,5 +146,24 @@ async def login_admin(form: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/me/admin")  # verificar token de user usando current_user
-async def me_admin(user: User = Depends(current_user_admin)):
-    return user
+async def me_admin(
+    user: User = Depends(current_user_admin), db: Session = Depends(get_db)
+):
+    try:
+        postgres_user = (
+            db.query(AdministrativoBasico)
+            .filter(AdministrativoBasico.id_adm == user.id)
+            .one()
+        )
+        user_postgres = postgres_administrativo_schema(postgres_user)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Administrativo no encontrado")
+
+    # Fusionar los datos de usuario de ambas fuentes en un nuevo diccionario
+    merged_user = {}
+    if user:
+        merged_user.update(user)
+    if user_postgres:
+        merged_user.update(user_postgres)
+
+    return merged_user

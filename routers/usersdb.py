@@ -13,7 +13,12 @@ from models.models import (
 from models.userdb import User, hash_password, UserRole
 from schemas.user import user_schema, users_schema
 from database.client import db_client
-from utils.usersdb import search_user, search_user_admin, search_fusion_user
+from utils.usersdb import (
+    search_user,
+    search_user_admin,
+    search_fusion_user_admin,
+    search_fusion_user,
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -32,10 +37,10 @@ async def users():
 
 @router.get("/get/graduate/{id}")
 async def user(id: str, db: Session = Depends(get_db)):
-    return await search_fusion_user(id, db)
+    return search_fusion_user(id, db)
 
 
-@router.post("/add/users", response_model=User, status_code=status.HTTP_201_CREATED)
+@router.post("/add/graduate", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: User, egresado_data: EgresadoUpdate, db: Session = Depends(get_db)
 ):
@@ -187,8 +192,8 @@ async def users_admin():
 
 
 @router.get("/get/admin/{id}")  # Path
-async def user_admin(id: str):
-    return search_user_admin("id", id)
+async def user_admin(id: str, db: Session = Depends(get_db)):
+    return search_fusion_user_admin(id, db)
 
 
 @router.post("/add/admin", response_model=User, status_code=status.HTTP_201_CREATED)
