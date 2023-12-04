@@ -11,8 +11,9 @@ from models.models import (
     Base,
 )
 from models.userdb import User, hash_password, UserRole
-from schemas.user import user_schema, users_schema
+from schemas.user import postgres_administrativo_schema, postgres_user_schema, user_schema, users_schema
 from database.client import db_client
+from utils.helper_functions import get_administrativo, get_egresado
 from utils.usersdb import (
     search_user,
     search_user_admin,
@@ -30,6 +31,59 @@ router = APIRouter(
 
 
 ### Apartir de aqui todo es graduate ###
+@router.get("/get/graduates")
+async def users_graduates(db: Session = Depends(get_db)):
+    try:
+        # Obtener todos los egresados de MongoDB
+        all_users_mongo = await users()
+
+    except Exception as e:
+        print(f"Error al obtener todos los egresados en MongoDB: {e}")
+        all_users_mongo = []
+
+    try:
+        # Obtener todos los egresados de PostgreSQL
+        all_users_postgres = db.query(EgresadoBasico).all()
+        all_users_postgres = [postgres_user_schema(user) for user in all_users_postgres]
+
+    except Exception as e:
+        print(f"Error al obtener todos los egresados en PostgreSQL: {e}")
+        all_users_postgres = []
+
+    # Fusionar los datos de todos los egresados de ambas fuentes de manera intercalada
+    merged_users = []
+    max_length = max(len(all_users_mongo), len(all_users_postgres))
+
+    for i in range(max_length):
+        merged_user = {}
+
+        if i < len(all_users_mongo):
+            merged_user.update({
+                "id": all_users_mongo[i]["id"],
+                "email": all_users_mongo[i]["email"],
+                "disabled": all_users_mongo[i]["disabled"],
+                "role": all_users_mongo[i]["role"]
+            })
+
+        if i < len(all_users_postgres):
+            merged_user.update({
+                "id_carrera": all_users_postgres[i]["id_carrera"],
+                "modalidad": all_users_postgres[i]["modalidad"],
+                "id_especialidad": all_users_postgres[i]["id_especialidad"],
+                "periodo_egreso": all_users_postgres[i]["periodo_egreso"],
+                "nombre": all_users_postgres[i]["nombre"],
+                "edad": all_users_postgres[i]["edad"],
+                "curp": all_users_postgres[i]["curp"],
+                "sexo": all_users_postgres[i]["sexo"],
+                "telefono": all_users_postgres[i]["telefono"],
+                "correo": all_users_postgres[i]["correo"],
+                "direccion": all_users_postgres[i]["direccion"]
+            })
+
+        merged_users.append(merged_user)
+
+    return merged_users
+
 @router.get("/get/graduates", response_model=list[User])
 async def users():
     return users_schema(db_client.graduates.find())
@@ -151,6 +205,23 @@ async def update_user(user: User):
 
     return search_user("id", user.id)
 
+@router.put("/update/graduate/{id_egre}")
+async def update_postgres_graduate(id_egre: str, graduate_data: EgresadoUpdate, db: Session = Depends(get_db)):
+    try:
+        egresado_actual = await get_egresado(db, id_egre)
+
+        # Update only the fields provided in the updated data
+        for key, value in graduate_data.dict(exclude_unset=True).items():
+            setattr(egresado_actual, key, value)
+
+        db.commit()
+        return {"message": "Datos del egresado actualizados correctamente"}
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+    finally:
+        db.close()
+
 
 @router.delete("/delete/graduate/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def del_user(id: str, db: Session = Depends(get_db)):
@@ -186,6 +257,55 @@ async def del_user(id: str, db: Session = Depends(get_db)):
 
 
 ### Apartir de aqui todo es admin ###
+@router.get("/get/admins")
+async def users_admin(db: Session = Depends(get_db)):
+    try:
+        # Obtener todos los admins de MongoDB
+        all_users_mongo = await users_admin()
+
+    except Exception as e:
+        print(f"Error al obtener todos los admins en MongoDB: {e}")
+        all_users_mongo = []
+
+    try:
+        # Obtener todos los admins de PostgreSQL
+        all_users_postgres = db.query(AdministrativoBasico).all()
+        all_users_postgres = [postgres_administrativo_schema(user) for user in all_users_postgres]
+
+    except Exception as e:
+        print(f"Error al obtener todos los admins en PostgreSQL: {e}")
+        all_users_postgres = []
+
+    # Fusionar los datos de todos los admins de ambas fuentes de manera intercalada
+    merged_users = []
+    max_length = max(len(all_users_mongo), len(all_users_postgres))
+
+    for i in range(max_length):
+        merged_user = {}
+
+        if i < len(all_users_mongo):
+            merged_user.update({
+                "id": all_users_mongo[i]["id"],
+                "email": all_users_mongo[i]["email"],
+                "disabled": all_users_mongo[i]["disabled"],
+                "role": all_users_mongo[i]["role"]
+            })
+
+        if i < len(all_users_postgres):
+            merged_user.update({
+                "nombre": all_users_postgres[i]["nombre"],
+                "cargo": all_users_postgres[i]["cargo"],
+                "fecha_nacimiento": all_users_postgres[i]["fecha_nacimiento"],
+                "genero": all_users_postgres[i]["genero"],
+                "direccion": all_users_postgres[i]["direccion"],
+                "correo": all_users_postgres[i]["correo"],
+                "telefono": all_users_postgres[i]["telefono"]
+            })
+
+        merged_users.append(merged_user)
+
+    return merged_users
+
 @router.get("/get/admins", response_model=list[User])
 async def users_admin():
     return users_schema(db_client.admins.find())
@@ -307,6 +427,22 @@ async def update_user_admin(user: User):
 
     return search_user_admin("id", user.id)
 
+@router.put("/update/admin/{id_adm}")
+async def update_postgres_admin(id_adm: str, admin_data: AdministrativoUpdate, db: Session = Depends(get_db)):
+    try:
+        admin_actual = await get_administrativo(db, id_adm)
+
+        # Update only the fields provided in the updated data
+        for key, value in admin_data.dict(exclude_unset=True).items():
+            setattr(admin_actual, key, value)
+
+        db.commit()
+        return {"message": "Datos del administrativo actualizados correctamente"}
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+    finally:
+        db.close()
 
 @router.delete("/delete/admin/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def del_user_admin(id: str, db: Session = Depends(get_db)):
