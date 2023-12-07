@@ -128,17 +128,15 @@ class AdministrativoUpdate(BaseModel):
 
 
 class Modalitype(str, Enum):
-    presencial = "presencial"
-    distancia = "distancia"
+    presencial = "Presencial"
+    distancia = "Distancia"
 
 
 class CarrerAdd(BaseModel):
     id_carrera: Optional[str] = Field(
         default="ISIC-2010-224", description="ID de la carrera"
     )
-    modalidad: Optional[Modalitype] = Field(
-        default="presencial", description="Modalidad"
-    )
+    modalidad: Optional[str] = Field(default="Presencial", description="Modalidad")
     nombre: Optional[str] = None
     jefe_dpt: Optional[str] = None
     cordinador: Optional[str] = None
