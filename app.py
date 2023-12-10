@@ -10,6 +10,7 @@ from routers import (
     career,
     specialty,
     study_plan,
+    dashboard
 )
 
 load_dotenv()
@@ -36,6 +37,7 @@ app.include_router(user.router)
 app.include_router(administrativo.router)
 app.include_router(egresado.router)
 app.include_router(usersdb.router)
+app.include_router(dashboard.router)
 app.include_router(career.router)
 app.include_router(specialty.router)
 app.include_router(study_plan.router)
