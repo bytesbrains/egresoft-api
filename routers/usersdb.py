@@ -298,12 +298,12 @@ async def create_user_admin(
 
 ### Apartir de aqui todo de employer ###
 @router.get("/get/employer/{id}")
-async def user(id: str, db: Session = Depends(get_db)):
+async def user_employer(id: str, db: Session = Depends(get_db)):
     return search_fusion_user_employer(id, db)
 
 
 @router.post("/add/employer", response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_user(
+async def create_user_employer(
     user: User, empleador_data: EgresadoUpdate, db: Session = Depends(get_db)
 ):
     try:
