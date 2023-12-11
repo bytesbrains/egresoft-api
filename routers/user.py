@@ -219,7 +219,7 @@ async def login_employer(form: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/me/employer")  # verificar token de user usando current_user
-async def me_admin(
+async def me_employer(
     user: User = Depends(current_user_employer), db: Session = Depends(get_db)
 ):
     try:
