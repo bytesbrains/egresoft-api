@@ -8,11 +8,17 @@ from utils.jwt_auth_users import (
     current_user_graduate,
     search_user_db_admin,
     current_user_admin,
+    current_user_employer,
+    search_user_db_employer,
 )
 from jose import jwt
 from models.user import User
-from models.models import EgresadoBasico, AdministrativoBasico, Base
-from schemas.user import postgres_user_schema, postgres_administrativo_schema
+from models.models import EgresadoBasico, AdministrativoBasico, Base, EmpleadorBasico
+from schemas.user import (
+    postgres_user_schema,
+    postgres_administrativo_schema,
+    empleador_schema,
+)
 from database.database import engine, get_db
 from sqlalchemy.orm import Session
 
@@ -158,6 +164,71 @@ async def me_admin(
         user_postgres = postgres_administrativo_schema(postgres_user)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Administrativo no encontrado")
+
+    # Fusionar los datos de usuario de ambas fuentes en un nuevo diccionario
+    merged_user = {}
+    if user:
+        merged_user.update(user)
+    if user_postgres:
+        merged_user.update(user_postgres)
+
+    return merged_user
+
+
+### Apartir de aqui todo el login del employer ###
+@router.post("/login/employer")
+async def login_employer(form: OAuth2PasswordRequestForm = Depends()):
+    try:
+        user = search_user_db_employer(form.username)
+
+        if not user:
+            raise HTTPException(
+                status_code=400, detail="Error: el usuario no es correcto"
+            )
+
+        if not crypt.verify(form.password, user.password):
+            raise HTTPException(
+                status_code=400, detail="Error: la contraseña no es correcta"
+            )
+
+        if user.disabled:
+            raise HTTPException(
+                status_code=400, detail="Error: el usuario está inactivo"
+            )
+
+        # Configuración del token de acceso
+        access_token = {
+            "sub": user.id,
+            "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION),
+        }
+
+        # Devuelve el token de acceso
+        return {
+            "access_token": jwt.encode(access_token, SECRET, algorithm=ALGORITHM),
+            "token_type": "bearer",
+        }
+
+    except Exception as e:
+        print(f"Error en la autenticación: {e}")
+        raise HTTPException(
+            status_code=500, detail="Error interno del servidor en la autenticación"
+        )
+
+
+# expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION)
+
+
+@router.get("/me/employer")  # verificar token de user usando current_user
+async def me_admin(
+    user: User = Depends(current_user_employer), db: Session = Depends(get_db)
+):
+    try:
+        postgres_user = (
+            db.query(EmpleadorBasico).filter(EmpleadorBasico.id_emp == user.id).one()
+        )
+        user_postgres = empleador_schema(postgres_user)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Empleador no encontrado")
 
     # Fusionar los datos de usuario de ambas fuentes en un nuevo diccionario
     merged_user = {}
