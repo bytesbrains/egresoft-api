@@ -7,6 +7,7 @@ from models.models import (
     AdministrativoUpdate,
     EgresadoBasico,
     EgresadoUpdate,
+    EmpleadorBasico,
     Base,
 )
 from models.userdb import User, hash_password, UserRole
@@ -22,6 +23,8 @@ from utils.usersdb import (
     search_user_admin,
     search_fusion_user_admin,
     search_fusion_user,
+    search_user_employer,
+    search_fusion_user_employer,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -38,7 +41,7 @@ router = APIRouter(
 async def users_graduates(db: Session = Depends(get_db)):
     try:
         # Obtener todos los egresados de MongoDB
-        all_users_mongo = await users()
+        all_users_mongo = await users_schema(db_client.graduates.find())
 
     except Exception as e:
         print(f"Error al obtener todos los egresados en MongoDB: {e}")
@@ -92,11 +95,6 @@ async def users_graduates(db: Session = Depends(get_db)):
     return merged_users
 
 
-@router.get("/get/graduates", response_model=list[User])
-async def users():
-    return users_schema(db_client.graduates.find())
-
-
 @router.get("/get/graduate/{id}")
 async def user(id: str, db: Session = Depends(get_db)):
     return search_fusion_user(id, db)
@@ -112,13 +110,6 @@ async def create_user(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Ya existe un usuario con ese ID",
-            )
-
-        existing_user = search_user("email", user.email)
-        if existing_user is not None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="El correo electrónico ya está en uso en otra cuenta",
             )
 
         hashed_password = hash_password(user.password)
@@ -295,6 +286,75 @@ async def create_user_admin(
                 result = db_client.admins.delete_one({"id": user.id})
                 if result.deleted_count == 0:
                     print("No se ha eliminado el usuario de MongoDB")
+
+        except Exception as ex:
+            print(f"Error al eliminar el usuario de MongoDB: {ex}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ha ocurrido un error al crear el usuario",
+        )
+
+
+### Apartir de aqui todo de employer ###
+@router.get("/get/employer/{id}")
+async def user(id: str, db: Session = Depends(get_db)):
+    return search_fusion_user_employer(id, db)
+
+
+@router.post("/add/employer", response_model=User, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user: User, empleador_data: EgresadoUpdate, db: Session = Depends(get_db)
+):
+    try:
+        existing_user = search_user_employer("id", user.id)
+        if existing_user is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ya existe un usuario con ese ID",
+            )
+
+        hashed_password = hash_password(user.password)
+        user_dict = dict(user)
+        user_dict["hashed_password"] = hashed_password
+        del user_dict["password"]
+        user_dict["password"] = hashed_password
+
+        if user.role != UserRole.employer:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Solo se permite el rol a 'employer'",
+            )
+
+        if user.role and not UserRole.__members__.get(user.role):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El valor de 'role' no es válido",
+            )
+        user_dict["role"] = user.role if user.role else UserRole.employer
+
+        user_id_mongo = db_client.employers.insert_one(user_dict).inserted_id
+        new_user_mongo = user_schema(
+            db_client.employers.find_one({"_id": user_id_mongo})
+        )
+
+        empleador_data_dict = empleador_data.dict()
+        empleador_data_dict["id_egre"] = user.id
+
+        empleador_instance = EmpleadorBasico(**empleador_data_dict)
+        db.add(empleador_instance)
+        db.commit()
+        db.close()
+
+        return User(**new_user_mongo)
+
+    except Exception as e:
+        print(f"Error al crear el usuario: {e}")
+        # Si ocurre un error, intenta eliminar el usuario creado de MongoDB
+        try:
+            result_mongo = db_client.employers.delete_one({"_id": user_id_mongo})
+            if result_mongo.deleted_count == 0:
+                print("No se ha eliminado el usuario en MongoDB")
 
         except Exception as ex:
             print(f"Error al eliminar el usuario de MongoDB: {ex}")
