@@ -219,7 +219,6 @@ class EmpleadorBasico(Base):
 
 
 class EmpleadoBasico(BaseModel):
-    id_emp: Optional[str] = Field(description="ID del empleador")
     nombre_empresa: str = Field(..., description="Nombre de la empresa")
     nombre_responsable: str = Field(..., description="Nombre del responsable")
     cargo_responsable: str = Field(..., description="Cargo del responsable")

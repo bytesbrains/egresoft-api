@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import SQLAlchemyError
-from models.models import Base, EmpleadorBasico
+from models.models import Base, EmpleadorBasico, EmpleadoBasico
 from database.database import engine, get_db
 from sqlalchemy.orm import Session
 from utils.helper_functions import get_empleador
@@ -23,9 +23,9 @@ async def return_empleador(id_emp: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Empleador no encontrado")
 
 
-@router.put("/{id_adm}")
+@router.put("/{id_emp}")
 async def actualizar_empleador(
-    id_emp: str, updated_data: EmpleadorBasico, db: Session = Depends(get_db)
+    id_emp: str, updated_data: EmpleadoBasico, db: Session = Depends(get_db)
 ):
     try:
         empleador_actual = await get_empleador(db, id_emp)

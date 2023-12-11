@@ -103,12 +103,11 @@ def planes_estudio_schema(planes_estudio: list[PlanEstudioDB]) -> list[dict]:
 
 def empleador_schema(empleado: EmpleadoBasico) -> dict:
     return {
-        "id_emp": empleado.id_emp,
         "nombre_empresa": empleado.nombre_empresa,
         "nombre_responsable": empleado.nombre_responsable,
         "cargo_responsable": empleado.cargo_responsable,
-        "direccion": empleado.direccion.model_dump() if empleado.direccion else None,
-        "correo": empleado.correo.model_dump() if empleado.correo else None,
-        "telefono": empleado.telefono.model_dump() if empleado.telefono else None,
+        "direccion": empleado.direccion,
+        "correo": empleado.correo,
+        "telefono": empleado.telefono,
         "detalle": empleado.detalle,
     }

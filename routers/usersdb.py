@@ -8,6 +8,7 @@ from models.models import (
     EgresadoBasico,
     EgresadoUpdate,
     EmpleadorBasico,
+    EmpleadoBasico,
     Base,
 )
 from models.userdb import User, hash_password, UserRole
@@ -304,7 +305,7 @@ async def user_employer(id: str, db: Session = Depends(get_db)):
 
 @router.post("/add/employer", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user_employer(
-    user: User, empleador_data: EgresadoUpdate, db: Session = Depends(get_db)
+    user: User, empleador_data: EmpleadoBasico, db: Session = Depends(get_db)
 ):
     try:
         existing_user = search_user_employer("id", user.id)
@@ -339,7 +340,7 @@ async def create_user_employer(
         )
 
         empleador_data_dict = empleador_data.dict()
-        empleador_data_dict["id_egre"] = user.id
+        empleador_data_dict["id_emp"] = user.id
 
         empleador_instance = EmpleadorBasico(**empleador_data_dict)
         db.add(empleador_instance)
