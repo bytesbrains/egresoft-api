@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import date, datetime
 from sqlalchemy import (
     JSON,
+    VARCHAR,
     Column,
     Integer,
     String,
@@ -9,6 +10,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     ForeignKeyConstraint,
     CheckConstraint,
+    Text,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Dict, Optional
@@ -201,6 +203,30 @@ class PlanEstudio(BaseModel):
         default=f"Agosto-Diciembre {datetime.today().year}",
         description="Periodo",
     )
+
+
+class EmpleadorBasico(Base):
+    __tablename__ = "empleador_basico"
+
+    id_emp = Column(VARCHAR(50), primary_key=True)
+    nombre_empresa = Column(String(255), nullable=False)
+    nombre_responsable = Column(String(255), nullable=False)
+    cargo_responsable = Column(String(255), nullable=False)
+    direccion = Column(JSON, nullable=False)
+    correo = Column(JSON, nullable=False)
+    telefono = Column(JSON, nullable=False)
+    detalle = Column(Text)
+
+
+class EmpleadoBasico(BaseModel):
+    id_emp: Optional[str] = Field(description="ID del empleador")
+    nombre_empresa: str = Field(..., description="Nombre de la empresa")
+    nombre_responsable: str = Field(..., description="Nombre del responsable")
+    cargo_responsable: str = Field(..., description="Cargo del responsable")
+    direccion: Optional[Direccion] = Field(..., description="Dirección")
+    correo: Optional[Correo] = Field(..., description="Dirección de correo electrónico")
+    telefono: Optional[Telefono] = Field(..., description="Número de teléfono")
+    detalle: Optional[str] = Field(description="Detalle adicional")
 
     class Config:
         from_attributes = True
