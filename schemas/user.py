@@ -4,6 +4,7 @@ from models.models import (
     EspecialidadDB,
     PlanEstudioDB,
     EgresadoBasico,
+    EmpleadoBasico,
 )
 
 
@@ -45,7 +46,7 @@ def postgres_user_schema(user: EgresadoBasico) -> dict:
         "telefono": user.telefono,
         "correo": user.correo,
         "direccion": user.direccion,
-        # Aquí puedes agregar más campos si es necesario # "id": user.id_egre,
+        # Aquí puedes agregar más campos si es necesario # "id": user.id_egre, en caso de querrer retornar algo mas
     }
 
 
@@ -98,3 +99,15 @@ def plan_estudio_schema(plan_estudio: PlanEstudioDB) -> dict:
 
 def planes_estudio_schema(planes_estudio: list[PlanEstudioDB]) -> list[dict]:
     return [plan_estudio_schema(plan) for plan in planes_estudio]
+
+
+def empleador_schema(empleado: EmpleadoBasico) -> dict:
+    return {
+        "nombre_empresa": empleado.nombre_empresa,
+        "nombre_responsable": empleado.nombre_responsable,
+        "cargo_responsable": empleado.cargo_responsable,
+        "direccion": empleado.direccion,
+        "correo": empleado.correo,
+        "telefono": empleado.telefono,
+        "detalle": empleado.detalle,
+    }

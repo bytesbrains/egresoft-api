@@ -10,6 +10,8 @@ from routers import (
     career,
     specialty,
     study_plan,
+    dashboard,
+    empleador,
 )
 
 load_dotenv()
@@ -35,13 +37,10 @@ async def read_root():
 app.include_router(user.router)
 app.include_router(administrativo.router)
 app.include_router(egresado.router)
+app.include_router(empleador.router)
 app.include_router(usersdb.router)
+app.include_router(dashboard.router)
 app.include_router(career.router)
 app.include_router(specialty.router)
 app.include_router(study_plan.router)
 app.include_router(encuesta.router)
-
-
-@app.get("/")
-def read_root():
-    return {"message": "¡Hola, mundo!"}
