@@ -35,7 +35,7 @@ class Page(BaseModel):
 
 
 class Survey(BaseModel):
-    surveyId: str,
+    surveyId: str
     title: str
     description: Optional[str] = None
     pages: List[Page]
