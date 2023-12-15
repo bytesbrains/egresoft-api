@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from itsdangerous import TimedJSONWebSignatureSerializer, SignatureExpired, BadSignature
 from datetime import datetime, timedelta
-from models.user import TokenPayload
+from models.userdb import hash_password, UserDB
 from database.client import db_client
 import os
 
@@ -135,8 +135,9 @@ def verify_token(token: str):
 
 
 def update_password(email, new_password):
+    hashed_password = hash_password(new_password)
     # Actualizar la contraseña en la base de datos
-    db.graduates.update_one({"email": email}, {"$set": {"password": new_password}})
+    db.graduates.update_one({"email": email}, {"$set": {"password": hashed_password}})
 
     # Eliminar el token de restablecimiento de la base de datos
     db.password_reset_tokens.delete_one({"email": email})
