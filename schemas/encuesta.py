@@ -35,6 +35,20 @@ class Page(BaseModel):
 
 
 class Survey(BaseModel):
+    surveyId: str
     title: str
     description: Optional[str] = None
     pages: List[Page]
+
+
+"----------------------------------------------------------------------------------------"
+class SurveyAnswerModel(BaseModel):
+    surveyId: str
+    answer: Survey
+
+class UserSurveyResponse(BaseModel):
+    surveyId: str
+    answer: Optional[dict] = None
+    survey: SurveyAnswerModel
+    userId: str
+    status: str = "pending" or "completed"
