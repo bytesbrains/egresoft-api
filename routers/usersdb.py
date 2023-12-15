@@ -113,6 +113,13 @@ async def create_user(
                 detail="Ya existe un usuario con ese ID",
             )
 
+        existing_user = search_user("email", user.email)
+        if existing_user is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El correo electrónico ya está en uso en otra cuenta",
+            )
+
         hashed_password = hash_password(user.password)
         user_dict = dict(user)
         user_dict["hashed_password"] = hashed_password
