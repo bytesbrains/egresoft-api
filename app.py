@@ -12,6 +12,7 @@ from routers import (
     study_plan,
     dashboard,
     empleador,
+    changePassword,
 )
 
 load_dotenv()
@@ -35,6 +36,7 @@ async def read_root():
 
 
 app.include_router(user.router)
+app.include_router(changePassword.router)
 app.include_router(administrativo.router)
 app.include_router(egresado.router)
 app.include_router(empleador.router)
