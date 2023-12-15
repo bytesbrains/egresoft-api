@@ -33,7 +33,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Rutas
 
 
-@router.post("/password")
+@router.post("/password/reset-password")
 async def forgot_password(email: str = Form(...)):
     # Verificar si el correo existe en la base de datos
     user = db.graduates.find_one({"email": email})
@@ -51,7 +51,7 @@ async def forgot_password(email: str = Form(...)):
     return {"message": "Correo electrónico enviado con éxito"}
 
 
-@router.post("/password/{token}")
+@router.post("/password/reset-password/{token}")
 async def Set_reset_password(token: str, new_password: str = Form(...)):
     # Verificar la validez del token
     email = verify_token(token)
