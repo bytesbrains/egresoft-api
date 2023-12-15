@@ -45,7 +45,9 @@ async def forgot_password(email: str = Form(...)):
     db.password_reset_tokens.insert_one({"email": email, "token": token})
 
     # Enviar correo electrónico con el token y el enlace de restablecimiento
-    reset_link = f"https://www.egresoft.tech/login/password?token={token}"
+    reset_link = (
+        f"https://www.egresoft.tech/login/password/reset-password?token={token}"
+    )
     send_password_reset_email(email, reset_link)
 
     return {"message": "Correo electrónico enviado con éxito"}
