@@ -124,12 +124,13 @@ async def update_survey_answer(
             detail=f"No se encontró la encuesta para el usuario con ID {user_id} y survey ID {survey_id}",
         )
 
-    updated_survey = existing_survey.copy()
-    updated_survey['answer'] = updated_answer
+    # Obtén la respuesta existente y acumula las nuevas respuestas
+    existing_answer = existing_survey.get('answer', {})
+    existing_answer.update(updated_answer)
 
     result = db_client.user_surveys.update_one(
         {"userId": user_id, "surveyId": survey_id},
-        {"$set": updated_survey}
+        {"$set": {"answer": existing_answer}}
     )
 
     if result.modified_count == 0:
@@ -138,9 +139,15 @@ async def update_survey_answer(
             detail=f"No se pudo actualizar la respuesta para la encuesta con ID {survey_id} y usuario {user_id}",
         )
 
+    # Recupera el documento de la encuesta actualizado después de la actualización
+    updated_survey_document = db_client.user_surveys.find_one({
+        "userId": user_id,
+        "surveyId": survey_id
+    })
+
     return UserSurveyResponse(
         surveyId=survey_id,
-        answer=updated_answer,
+        answer=updated_survey_document.get('answer'),
         survey=existing_survey.get('survey'),
         userId=user_id,
         status=existing_survey.get('status')
