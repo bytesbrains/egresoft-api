@@ -68,8 +68,12 @@ async def forgot_password(email: str = Form(...), db: Session = Depends(get_db))
     )
 
     if result:
+        user_id = result.id_egre
         # Generar y guardar un token de restablecimiento en PostgreSQL
         token = generate_reset_token(email)
+        db_client.password_reset_tokens.insert_one(
+            {"id": user_id, "email": email, "token": token}
+        )
         # Aquí se insertaría en la tabla correspondiente en PostgreSQL
 
         # Enviar correo electrónico con el token y el enlace de restablecimiento desde PostgreSQL
