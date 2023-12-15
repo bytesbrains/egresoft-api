@@ -97,15 +97,8 @@ async def get_user_surveys(user_id: str, status_survey: Optional[str] = None):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No se encontraron encuestas para el usuario con ID {user_id} y estado {status_survey}",
         )
-
-    return [
-        UserSurveyResponse(
-            surveyId=survey['surveyId'],
-            survey=survey['survey'],
-            userId=user_id,
-            status=survey['status']
-        ) for survey in user_surveys
-    ]
+    
+    return [UserSurveyResponse(**survey) for survey in user_surveys]
 
 @router.patch("/update/{survey_id}/{user_id}", response_model=UserSurveyResponse)
 async def update_survey_answer(
@@ -124,8 +117,12 @@ async def update_survey_answer(
             detail=f"No se encontró la encuesta para el usuario con ID {user_id} y survey ID {survey_id}",
         )
 
-    # Obtén la respuesta existente y acumula las nuevas respuestas
+    # Obtén la respuesta existente o crea una nueva si no existe
     existing_answer = existing_survey.get('answer', {})
+    
+    if existing_answer is None:
+        existing_answer = {}
+
     existing_answer.update(updated_answer)
 
     result = db_client.user_surveys.update_one(
