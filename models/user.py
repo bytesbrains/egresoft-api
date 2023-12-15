@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from enum import Enum
+from datetime import datetime
 
 
 class UserRole(str, Enum):
@@ -18,6 +19,11 @@ class User(BaseModel):
 
 class UserDB(User):
     password: str
+
+
+class TokenPayload(BaseModel):
+    email: str
+    exp: datetime
 
 
 class Config:
