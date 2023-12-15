@@ -1,11 +1,6 @@
-from fastapi import Depends, HTTPException, APIRouter, status, Form
+from fastapi import HTTPException, APIRouter, status, Form
 from database.client import db_client
 from fastapi.security import OAuth2PasswordBearer
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
-from starlette.middleware.sessions import SessionMiddleware
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from utils.changePassword import (
     send_password_reset_email,
     verify_token,
@@ -18,7 +13,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-templates = Jinja2Templates(directory="templates")
 router = APIRouter(
     prefix="/login",
     tags=["Cambiar Contraseña Egresado"],
